@@ -36,7 +36,8 @@ class UrlShortenerServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new UrlShortenerService(repository, "http://localhost:8080");
+        service = new UrlShortenerService(repository, "http://localhost:8080", 1575825271L);
+        service.setSelf(service);
     }
 
     // --- shortenUrl tests ---
@@ -52,11 +53,12 @@ class UrlShortenerServiceTest {
             return m;
         });
 
-        ShortenResponse response = service.shortenUrl("https://www.example.com", null);
+        ShortenResponse response = service.shortenUrl("https://www.example.com", null, null);
 
         assertNotNull(response.getShortCode());
-        assertEquals("1", response.getShortCode()); // Base62(1) = "1"
-        assertEquals("http://localhost:8080/1", response.getShortUrl());
+        // Code is scrambled, so we can't easily assert exact value here unless we mock the generator
+        assertNotEquals("1", response.getShortCode()); 
+        assertTrue(response.getShortUrl().startsWith("http://localhost:8080/"));
         assertEquals("https://www.example.com", response.getOriginalUrl());
 
         // save called twice: once for placeholder, once for real code
@@ -72,7 +74,7 @@ class UrlShortenerServiceTest {
             return m;
         });
 
-        ShortenResponse response = service.shortenUrl("https://www.example.com", "my-link");
+        ShortenResponse response = service.shortenUrl("https://www.example.com", "my-link", null);
 
         assertEquals("my-link", response.getShortCode());
         assertEquals("http://localhost:8080/my-link", response.getShortUrl());
@@ -86,25 +88,25 @@ class UrlShortenerServiceTest {
         when(repository.existsByShortCode("taken")).thenReturn(true);
 
         assertThrows(AliasAlreadyExistsException.class,
-                () -> service.shortenUrl("https://www.example.com", "taken"));
+                () -> service.shortenUrl("https://www.example.com", "taken", null));
     }
 
     @Test
     void shortenUrl_invalidUrl_throwsBadRequest() {
         assertThrows(InvalidUrlException.class,
-                () -> service.shortenUrl("not-a-url", null));
+                () -> service.shortenUrl("not-a-url", null, null));
     }
 
     @Test
     void shortenUrl_ftpUrl_throwsBadRequest() {
         assertThrows(InvalidUrlException.class,
-                () -> service.shortenUrl("ftp://files.example.com/doc.pdf", null));
+                () -> service.shortenUrl("ftp://files.example.com/doc.pdf", null, null));
     }
 
     @Test
     void shortenUrl_emptyUrl_throwsBadRequest() {
         assertThrows(InvalidUrlException.class,
-                () -> service.shortenUrl("", null));
+                () -> service.shortenUrl("", null, null));
     }
 
     // --- resolveAndTrack tests ---

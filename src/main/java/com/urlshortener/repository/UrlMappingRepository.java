@@ -19,6 +19,7 @@ public interface UrlMappingRepository extends JpaRepository<UrlMapping, Long> {
      * Look up a mapping by its short code.
      * Used by both redirect and stats endpoints.
      */
+    @org.springframework.cache.annotation.Cacheable(value = "redirects", unless = "#result == null")
     Optional<UrlMapping> findByShortCode(String shortCode);
 
     /**
@@ -26,4 +27,14 @@ public interface UrlMappingRepository extends JpaRepository<UrlMapping, Long> {
      * Used to validate custom aliases before insertion.
      */
     boolean existsByShortCode(String shortCode);
+
+    /**
+     * Delete all URL mappings that have expired.
+     */
+    long deleteByExpiresAtBefore(java.time.LocalDateTime now);
+
+    /**
+     * Count how many URL mappings have expired.
+     */
+    int countByExpiresAtBefore(java.time.LocalDateTime now);
 }

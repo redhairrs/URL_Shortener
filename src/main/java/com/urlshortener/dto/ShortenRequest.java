@@ -19,11 +19,21 @@ public class ShortenRequest {
     @Pattern(regexp = "^[a-zA-Z0-9-]+$", message = "Custom alias may only contain letters, digits, and hyphens")
     private String customAlias;
 
+    @jakarta.validation.constraints.Min(value = 1, message = "Expires in hours must be at least 1")
+    @jakarta.validation.constraints.Max(value = 8760, message = "Expires in hours must be at most 8760 (1 year)")
+    private Integer expiresInHours;
+
     public ShortenRequest() {}
 
     public ShortenRequest(String url, String customAlias) {
         this.url = url;
         this.customAlias = customAlias;
+    }
+
+    public ShortenRequest(String url, String customAlias, Integer expiresInHours) {
+        this.url = url;
+        this.customAlias = customAlias;
+        this.expiresInHours = expiresInHours;
     }
 
     public String getUrl() {
@@ -41,4 +51,13 @@ public class ShortenRequest {
     public void setCustomAlias(String customAlias) {
         this.customAlias = customAlias;
     }
+
+    public Integer getExpiresInHours() {
+        return expiresInHours;
+    }
+
+    public void setExpiresInHours(Integer expiresInHours) {
+        this.expiresInHours = expiresInHours;
+    }
 }
+

@@ -14,3 +14,4 @@ spring:
 
 app:
   base-url: http://localhost:8080
+  redirect-type: 302

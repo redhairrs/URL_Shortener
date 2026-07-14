@@ -36,6 +36,8 @@ public class UrlMapping {
 
     private LocalDateTime lastAccessedAt;
 
+    private LocalDateTime expiresAt;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -97,5 +99,13 @@ public class UrlMapping {
 
     public void setLastAccessedAt(LocalDateTime lastAccessedAt) {
         this.lastAccessedAt = lastAccessedAt;
+    }
+
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(LocalDateTime expiresAt) {
+        this.expiresAt = expiresAt;
     }
 }

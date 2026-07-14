@@ -18,3 +18,5 @@ spring:
 
 app:
   base-url: http://localhost:8080
+  redirect-type: 302
+  scramble-key: 1575825271

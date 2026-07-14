@@ -20,17 +20,17 @@ I used the AI assistant to scaffold the project structure, generate boilerplate 
 
 ## 3. The two or three biggest trade-offs you made, and the alternatives you considered
 
-### Trade-off 1: Base62(auto-increment ID) vs. random short codes
+### Trade-off 1: Feistel-Scrambled Base62 ID vs. Random short codes
 
-**Chose**: Base62 encoding of the auto-increment ID.
-**Alternative**: Random 6-character string with uniqueness check + retry.
-**Why**: Base62(ID) is deterministic and collision-free — no retry loops, no race conditions, O(1) generation. The downside is predictability (sequential codes are guessable), but for this exercise, simplicity and correctness matter more than obscurity. In production, I'd add a random offset or use a Snowflake-style ID generator.
+**Chose**: Base62 encoding of a Feistel-scrambled auto-increment ID.
+**Alternative**: Random 6-character string with uniqueness check + retry, or simple XOR masking.
+**Why**: The 2-round Feistel cipher provides deterministic, non-sequential, and collision-free ID generation — no retry loops, no race conditions, O(1) generation. The output is pseudo-random, preventing enumeration attacks (guessing the total URL count) without requiring external dependencies like Hashids.
 
-### Trade-off 2: Denormalized click counter vs. separate clicks table
+### Trade-off 2: Caffeine Cache for Redirects vs. Immediate DB Write for Click Counts
 
-**Chose**: A `click_count` column on the `urls` table, incremented on each redirect.
-**Alternative**: A separate `clicks` table with one row per click (storing timestamp, referrer, IP, etc.).
-**Why**: The denormalized counter is simpler, avoids JOINs for the stats endpoint, and is sufficient for the exercise scope (total count + last access time). The separate table would be necessary for time-series analytics, geo breakdown, or referrer tracking — but that's scope I intentionally deferred.
+**Chose**: In-memory Caffeine cache for the `shortCode → originalUrl` mapping lookup, while still updating `clickCount` synchronously in the database on every redirect.
+**Alternative**: Cache the full mapping and buffer/batch click count updates to the database asynchronously.
+**Why**: Caching the lookup serves the hot read path without introducing data loss or consistency issues for analytics. While batched writes would scale better under extreme load, synchronous writes are simpler and ensure the stats endpoint is always perfectly accurate. The trade-off is a slightly higher database write load, but the heavy lifting of the read query is bypassed.
 
 ### Trade-off 3: New code per duplicate URL vs. idempotent shortening
 
@@ -40,11 +40,7 @@ I used the AI assistant to scaffold the project structure, generate boilerplate 
 
 ## 4. What's missing, or what you'd do with another day?
 
-- **Rate limiting**: No request throttling. I'd add Spring's `Bucket4j` or a simple in-memory rate limiter to prevent abuse.
-- **Caching**: Redirect lookups hit the database on every request. A Redis or Caffeine cache in front of `findByShortCode` would dramatically reduce latency.
-- **Expiration / TTL**: Short URLs live forever. I'd add an optional `expiresAt` column and a scheduled cleanup job.
 - **Observability**: No metrics or structured logging. I'd add Micrometer metrics (shorten rate, redirect latency, cache hit ratio) and structured JSON logging.
 - **Security hardening**: No CORS configuration, no input sanitization beyond URL validation, no protection against open-redirect attacks (where the original URL is itself a redirect).
-- **Docker Compose**: A `docker-compose.yml` for one-command local setup with MySQL.
-- **Pagination on stats**: If analytics grew to include per-click data, the stats endpoint would need pagination.
-- **Short code obscurity**: Base62(ID) is sequential and guessable. For production, I'd XOR the ID with a secret key or use a pseudo-random permutation to make codes non-sequential while remaining collision-free.
+- **Pagination on stats**: If analytics grew to include per-click data (or if we retrieved a list of top URLs), the stats endpoint would need pagination.
+- **High Availability Caching**: The current Caffeine cache is purely local. In a multi-node deployment, I'd switch to Redis for a distributed caching layer.

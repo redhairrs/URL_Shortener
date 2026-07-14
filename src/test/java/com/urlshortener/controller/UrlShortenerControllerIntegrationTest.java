@@ -132,7 +132,7 @@ class UrlShortenerControllerIntegrationTest {
 
         // Then redirect
         mockMvc.perform(get("/goog"))
-                .andExpect(status().isMovedPermanently())
+                .andExpect(status().isFound())
                 .andExpect(header().string("Location", "https://www.google.com"));
     }
 
@@ -184,12 +184,12 @@ class UrlShortenerControllerIntegrationTest {
 
         // 2. Redirect (click 1)
         mockMvc.perform(get("/wiki"))
-                .andExpect(status().isMovedPermanently())
+                .andExpect(status().isFound())
                 .andExpect(header().string("Location", "https://www.wikipedia.org"));
 
         // 3. Redirect again (click 2)
         mockMvc.perform(get("/wiki"))
-                .andExpect(status().isMovedPermanently());
+                .andExpect(status().isFound());
 
         // 4. Verify stats show 2 clicks
         mockMvc.perform(get("/api/v1/urls/wiki/stats"))
