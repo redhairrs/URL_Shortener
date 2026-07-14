@@ -29,6 +29,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 class UrlShortenerControllerIntegrationTest {
 
+    @org.springframework.boot.test.mock.mockito.MockBean
+    private org.springframework.data.redis.connection.RedisConnectionFactory redisConnectionFactory;
+
+    @org.springframework.boot.test.mock.mockito.MockBean
+    private org.springframework.data.redis.connection.ReactiveRedisConnectionFactory reactiveRedisConnectionFactory;
+
     @Autowired
     private MockMvc mockMvc;
 

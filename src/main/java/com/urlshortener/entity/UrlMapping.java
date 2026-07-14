@@ -1,6 +1,7 @@
 package com.urlshortener.entity;
 
 import jakarta.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @Table(name = "urls", indexes = {
     @Index(name = "idx_short_code", columnList = "shortCode", unique = true)
 })
-public class UrlMapping {
+public class UrlMapping implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

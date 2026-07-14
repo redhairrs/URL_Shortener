@@ -26,11 +26,11 @@ I used the AI assistant to scaffold the project structure, generate boilerplate 
 **Alternative**: Random 6-character string with uniqueness check + retry, or simple XOR masking.
 **Why**: The 2-round Feistel cipher provides deterministic, non-sequential, and collision-free ID generation — no retry loops, no race conditions, O(1) generation. The output is pseudo-random, preventing enumeration attacks (guessing the total URL count) without requiring external dependencies like Hashids.
 
-### Trade-off 2: Caffeine Cache for Redirects vs. Immediate DB Write for Click Counts
+### Trade-off 2: Redis Cache for Redirects vs. Immediate DB Write for Click Counts
 
-**Chose**: In-memory Caffeine cache for the `shortCode → originalUrl` mapping lookup, while still updating `clickCount` synchronously in the database on every redirect.
-**Alternative**: Cache the full mapping and buffer/batch click count updates to the database asynchronously.
-**Why**: Caching the lookup serves the hot read path without introducing data loss or consistency issues for analytics. While batched writes would scale better under extreme load, synchronous writes are simpler and ensure the stats endpoint is always perfectly accurate. The trade-off is a slightly higher database write load, but the heavy lifting of the read query is bypassed.
+**Chose**: Distributed Redis cache for the `shortCode → originalUrl` mapping lookup, while still updating `clickCount` synchronously in the database on every redirect.
+**Alternative**: Cache the full mapping in memory (Caffeine) or buffer/batch click count updates to the database asynchronously.
+**Why**: We initially considered Caffeine for simplicity, but shifted to Redis to support high availability and horizontal scaling. If multiple instances of the app are running behind a load balancer, Redis acts as a shared source of truth. Caching the lookup serves the hot read path without introducing data loss or consistency issues for analytics. While batched writes would scale better under extreme load, synchronous writes are simpler and ensure the stats endpoint is always perfectly accurate. The trade-off is a slightly higher database write load, but the heavy lifting of the read query is bypassed.
 
 ### Trade-off 3: New code per duplicate URL vs. idempotent shortening
 
@@ -43,4 +43,3 @@ I used the AI assistant to scaffold the project structure, generate boilerplate 
 - **Observability**: No metrics or structured logging. I'd add Micrometer metrics (shorten rate, redirect latency, cache hit ratio) and structured JSON logging.
 - **Security hardening**: No CORS configuration, no input sanitization beyond URL validation, no protection against open-redirect attacks (where the original URL is itself a redirect).
 - **Pagination on stats**: If analytics grew to include per-click data (or if we retrieved a list of top URLs), the stats endpoint would need pagination.
-- **High Availability Caching**: The current Caffeine cache is purely local. In a multi-node deployment, I'd switch to Redis for a distributed caching layer.
