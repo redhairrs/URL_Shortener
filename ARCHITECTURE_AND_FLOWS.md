@@ -105,7 +105,7 @@ This sequence flowchart shows how the application uses Redis to serve redirects 
 
 ```mermaid
 flowchart TD
-    Start([User navigates to GET /{code}]) --> CheckCache{Check Redis Cache for Short Code}
+    Start(["User navigates to GET /{code}"]) --> CheckCache{Check Redis Cache for Short Code}
     
     %% Cache Hit
     CheckCache -- Hit --> ParseMapping[Retrieve original URL & Expiration time]

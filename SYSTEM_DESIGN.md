@@ -69,7 +69,7 @@ graph TD
 
     %% Flow connections
     Client -->|POST /api/v1/shorten| RL
-    Client -->|GET /{code}| API_REDIR
+    Client -->|"GET /{code}"| API_REDIR
     
     RL --> API_REST
     API_REST --> Service
