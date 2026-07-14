@@ -2,8 +2,6 @@
 
 This document contains a comprehensive visual guide to the system architecture, component interactions, runtime flowcharts, and sequence diagrams of the URL Shortener project.
 
-![System Architecture Concept Diagram](/C:/Users/preyr/.gemini/antigravity-ide/brain/ce7e6ebb-2489-4b52-bdbb-ebd64eed1fca/system_architecture_diagram_1784055530059.png)
-
 ---
 
 ## 1. High-Level System Architecture
