@@ -254,19 +254,19 @@ erDiagram
 
 ### 6.1 UML Sequence: Creating a Short URL
 
-This sequence diagram uses formal UML representations (Boundary, Control, Entity, Database) to map object interactions.
+This sequence diagram uses formal UML representations to map object interactions.
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Client as Client / Browser
     box Application Tier
-        boundary API as UrlShortenerController
-        control Service as UrlShortenerService
-        control Feistel as ShortCodeGenerator
+        participant API as UrlShortenerController
+        participant Service as UrlShortenerService
+        participant Feistel as ShortCodeGenerator
     end
     box Database Tier
-        database DB as MySQL Database
+        participant DB as MySQL Database
     end
 
     Client->>API: POST /api/v1/shorten (request)
@@ -319,13 +319,13 @@ sequenceDiagram
     autonumber
     actor Client as User Client
     box Application Tier
-        boundary API as RedirectController
-        control ServiceProxy as UrlShortenerService (Proxy)
-        control Service as UrlShortenerService (Target)
+        participant API as RedirectController
+        participant ServiceProxy as UrlShortenerService (Proxy)
+        participant Service as UrlShortenerService (Target)
     end
     box Cache / Persistence Tier
         participant Cache as Redis Cache
-        database DB as MySQL Database
+        participant DB as MySQL Database
     end
 
     Client->>API: GET /{shortCode}
